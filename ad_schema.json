@@ -1,0 +1,21 @@
+{
+    "domain": "beck.local",
+
+    "groups": [
+        {
+        "name": "Engineering"
+        }
+    ],
+
+"users": [
+    {
+    "name" : "Josh Beck",
+    "password":"Student123!",
+    "groups": [
+        "Engineering"
+    ]
+   
+    }
+]
+
+}
