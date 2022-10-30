@@ -44,18 +44,6 @@ for ($i = 0; $i -lt $num_users; $i= $i + 1){
     "users"=$users
 }
 
-#foreach($user in $users) {
-#@{
-
-   # "name"=$user.name
-   # "password"=$user.password
-   # "groups"=$user.groups
-
-
-    #}
-
-#}
-
 
 
 

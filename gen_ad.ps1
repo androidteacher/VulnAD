@@ -3,9 +3,9 @@ param ([Parameter(Mandatory = $true)] $JSONFile)
 function CreateADGroup() {
     param ([Parameter(Mandatory = $true)] $groupObject)
     $group = $groupObject.name
-    <#
+   
     New-ADGroup -name $group -GroupScope Global
-#>
+
 }
 function RemoveADGroup() {
     param( [Parameter(Mandatory = $true)] $groupObject)
@@ -23,11 +23,12 @@ function RemoveADUser() {
 function CreateADUser() {
     param ([Parameter(Mandatory = $true)] $userObject)
     $name = $userObject.name
+    $password=$userobject.password
     $firstname, $lastname = $name.Split(" ")
     $username = ($name[0] + $name.Split(" ")[1]).ToLower()
     $samAccountName = $username
     $principalname = $username
-    $password = "Student123!"
+    #$password = "Student123!"
     #Create the AD user object
 
     New-ADUser -Name "$firstname $lastname" -GivenName $firstname -Surname $lastname -SamAccountName $SamAccountName -UserPrincipalName $principalname@$Global:Domain -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -PassThru | Enable-ADAccount
@@ -46,7 +47,19 @@ function CreateADUser() {
 
 }
 
+function WeakenPasswordPolicy(){
+    secedit /export /cfg C:\Windows\Tasks\secpol.cfg
+    (Get-Content C:\Windows\Tasks\secpol.cfg).replace("PasswordComplexity = 1", "PasswordComplexity = 0").replace("MinimumPasswordLength = 7", "MinimumPasswordLength = 1") | Out-File C:\Windows\Tasks\secpol.cfg
+    secedit /configure /db c:\windows\security\local.sdb /cfg C:\Windows\Tasks\secpol.cfg /areas SECURITYPOLICY
+    rm -force C:\Windows\Tasks\secpol.cfg -confirm:$false
+}
 
+function StrengthenPasswordPolicy(){
+    secedit /export /cfg C:\Windows\Tasks\secpol.cfg
+    (Get-Content C:\Windows\Tasks\secpol.cfg).replace("PasswordComplexity = 0", "PasswordComplexity = 1").replace("MinimumPasswordLength = 1", "MinimumPasswordLength = 7") | Out-File C:\Windows\Tasks\secpol.cfg
+    secedit /configure /db c:\windows\security\local.sdb /cfg C:\Windows\Tasks\secpol.cfg /areas SECURITYPOLICY
+    rm -force C:\Windows\Tasks\secpol.cfg -confirm:$false
+}
 
 $json = (get-content $JSONFile | convertfrom-json)
 $removeallgroups = Read-Host "Would you like to remove groups this time? (Y/N)"
@@ -72,6 +85,6 @@ if ($removeallusers -eq "Y") {
         RemoveADUser $user
     }
 }
-#
+
 
 
