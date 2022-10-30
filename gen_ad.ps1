@@ -1,4 +1,5 @@
-param ([Parameter(Mandatory = $true)] $JSONFile)
+param ([Parameter(Mandatory = $true)] $JSONFile,
+[switch]$Undo)
 
 function CreateADGroup() {
     param ([Parameter(Mandatory = $true)] $groupObject)
@@ -62,29 +63,32 @@ function StrengthenPasswordPolicy(){
 }
 
 $json = (get-content $JSONFile | convertfrom-json)
-$removeallgroups = Read-Host "Would you like to remove groups this time? (Y/N)"
-$removeallusers = Read-Host "Would you like to remove all users? (Y/N)"
-if ($removeallgroups -eq "Y") {
-    foreach ($group in $json.groups) {
+$Global:Domain = $json.domain
+
+   if ($Undo){
+    StrengthenPasswordPolicy
+foreach ($group in $json.groups) {
         RemoveADGroup $group
     }
-}
-if ($removeallgroups -ne "Y") {
-    foreach ($group in $json.groups) {
+
+foreach ($user in $json.users) {
+        RemoveADUser $user
+    }
+   }else{
+    WeakenPasswordPolicy
+foreach ($group in $json.groups) {
         CreateADGroup $group
     }
-}
-$Global:Domain = $json.domain
-if ($removeallusers -ne "Y") {
-    foreach ($user in $json.users) {
+
+
+
+foreach ($user in $json.users) {
         CreateADUser $user
     }
 }
-if ($removeallusers -eq "Y") {
-    foreach ($user in $json.users) {
-        RemoveADUser $user
-    }
-}
+
+   
+
 
 
 
